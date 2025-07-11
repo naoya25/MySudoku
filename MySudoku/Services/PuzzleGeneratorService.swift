@@ -192,9 +192,6 @@ class PuzzleGeneratorService {
         // 一意でない場合、セルを復元
         puzzle[index] = originalValue
         removedIndices.removeLast()
-        print("セル \(index) を復元しました")
-      } else {
-        print("セル \(index) を削除しました（空のセル数: \(String(puzzle).filter { $0 == "0" }.count)）")
       }
     }
 

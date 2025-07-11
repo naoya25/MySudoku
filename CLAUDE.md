@@ -90,6 +90,11 @@ MySudoku/
 ### Supabase テーブル定義
 
 ```sql
+create table public.admin_users (
+  user_id uuid primary key references auth.users (id) on delete cascade
+);
+
+
 create table public.sudoku (
   id CHAR(26) primary key, -- ULIDは26文字の英数字
   given_data VARCHAR(81) not null, -- 81文字の問題データ
@@ -135,17 +140,9 @@ struct Move: Codable {
 
 ---
 
-## 7. ビルド手順 & TODO
+## 7. ドキュメント
 
-1. **Xcode プロジェクト作成** → 上記フォルダを物理フォルダとして追加。
-2. `Model/GameBoard` に `Board`, `Cell`, `Move` と **ValidationService** を実装。
-3. `ViewModel/GameBoard` で `GameBoardViewModel` を作り、数字入力 & ノートモードを管理。
-4. `View/GameBoard` に UI を実装し、プレビューで動作確認。
-5. `Services/TimerService` と `UndoStack` を統合。
-6. `PersistenceService` で途中保存＆復元を確認。
-7. `Model/Generator` を Swift Package として実装し、ユニットテストで難易度別生成を検証。
-8. UI 仕上げ & アクセシビリティ対応。
+docsディレクトリに主要機能のドキュメントが書かれています。
+機能ごとに追記、修正を行ってください。
 
----
-
-> 🚀 **次のアクション**: `Model/GameBoard` と `ViewModel/GameBoard` をまず実装し、`View/GameBoard` のプレビューで数字入力・メモ機能を確認しましょう。
+修正すべきタスクや今後のタスクは、docs/todo/CLAUDE.mdに記載してください。
