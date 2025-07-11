@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 class GameBoardViewModel: ObservableObject {
@@ -7,6 +8,10 @@ class GameBoardViewModel: ObservableObject {
   @Published var selectedPosition: Position?
   @Published var isNoteMode = false
   @Published var gameState: GameState = .playing
+  @Published var formattedElapsedTime: String = "00:00"
+  
+  private let timerService = TimerService()
+  private var cancellables = Set<AnyCancellable>()
 
   enum GameState {
     case error
@@ -20,12 +25,18 @@ class GameBoardViewModel: ObservableObject {
       await loadNewPuzzle()
     }
   }
+  
+  init() {
+    setupTimerBinding()
+  }
 
   func startGameWithPuzzle(_ puzzle: SupabaseResponse) {
     board = Board(givenData: puzzle.givenData, solutionData: puzzle.solutionData)
     selectedPosition = nil
     isNoteMode = false
     gameState = .playing
+    timerService.reset()
+    timerService.start()
   }
 
   private func loadNewPuzzle() async {
@@ -34,6 +45,8 @@ class GameBoardViewModel: ObservableObject {
       selectedPosition = nil
       isNoteMode = false
       gameState = .playing
+      timerService.reset()
+      timerService.start()
     } catch {
       print(
         "Failed to load puzzle from Supabase: \(error.localizedDescription)"
@@ -51,8 +64,10 @@ class GameBoardViewModel: ObservableObject {
       break
     case .playing:
       gameState = .paused
+      timerService.pause()
     case .paused:
       gameState = .playing
+      timerService.resume()
     case .completed:
       break
     }
@@ -161,11 +176,18 @@ class GameBoardViewModel: ObservableObject {
       let validationResult = ValidationService.validateBoard(board)
       if validationResult.isValid {
         gameState = .completed
+        timerService.pause()
       }
     }
   }
 
   func getValidationResult() -> ValidationResult {
     return ValidationService.validateBoard(board)
+  }
+  
+  private func setupTimerBinding() {
+    timerService.$elapsedTime
+      .map { self.timerService.formatTime($0) }
+      .assign(to: &$formattedElapsedTime)
   }
 }
