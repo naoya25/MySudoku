@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GameBoardView: View {
   @StateObject private var viewModel = GameBoardViewModel()
+  let selectedPuzzle: SupabaseResponse?
 
   var body: some View {
     VStack {
@@ -18,7 +19,11 @@ struct GameBoardView: View {
     }
     .navigationTitle("MySudoku")
     .onAppear {
-      viewModel.startNewGame()
+      if let puzzle = selectedPuzzle {
+        viewModel.startGameWithPuzzle(puzzle)
+      } else {
+        viewModel.startNewGame()
+      }
     }
   }
 
@@ -142,5 +147,5 @@ struct GameBoardView: View {
 }
 
 #Preview {
-  GameBoardView()
+  GameBoardView(selectedPuzzle: nil)
 }

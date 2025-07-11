@@ -131,6 +131,42 @@ class SupabaseService {
       }
     }
   }
+
+  func fetchAllPuzzles() async throws -> [SupabaseResponse] {
+    guard let url = URL(string: "\(baseURL)/rest/v1/sudoku?select=*&order=difficulty,id") else {
+      throw SupabaseError.invalidURL
+    }
+
+    var request = URLRequest(url: url)
+    request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+    request.setValue(apiKey, forHTTPHeaderField: "apikey")
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+    do {
+      let (data, response) = try await session.data(for: request)
+
+      guard let httpResponse = response as? HTTPURLResponse else {
+        throw SupabaseError.networkError
+      }
+
+      guard httpResponse.statusCode == 200 else {
+        throw SupabaseError.httpError(httpResponse.statusCode)
+      }
+
+      let decoder = JSONDecoder()
+      decoder.dateDecodingStrategy = .iso8601
+      let responses = try decoder.decode([SupabaseResponse].self, from: data)
+
+      return responses
+    } catch {
+      if error is SupabaseError {
+        throw error
+      } else {
+        throw SupabaseError.decodingError(error)
+      }
+    }
+  }
 }
 
 enum SupabaseError: Error, LocalizedError {

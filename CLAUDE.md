@@ -85,6 +85,29 @@ MySudoku/
 
 ---
 
+## 5.1 データベーススキーマ
+
+### Supabase テーブル定義
+
+```sql
+create table public.sudoku (
+  id CHAR(26) primary key, -- ULIDは26文字の英数字
+  given_data VARCHAR(81) not null, -- 81文字の問題データ
+  solution_data VARCHAR(81) not null, -- 81文字の解答データ
+  difficulty SMALLINT not null default 1500, -- 難易度（初期値1500）
+  created_at TIMESTAMP default CURRENT_TIMESTAMP
+);
+```
+
+**フィールド説明:**
+- `id`: ULID形式のプライマリキー（26文字の英数字）
+- `given_data`: 初期盤面データ（81文字の文字列、空マスは0で表現）
+- `solution_data`: 完全解答データ（81文字の文字列）
+- `difficulty`: 難易度スコア（デフォルト1500）
+- `created_at`: レコード作成日時
+
+---
+
 ## 6. データモデル例
 
 ```swift

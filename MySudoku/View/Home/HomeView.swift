@@ -79,6 +79,18 @@ struct HomeView: View {
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(12)
             }.disabled(true)
+            Button(action: {
+              viewModel.showLogin()
+            }) {
+              Text("ログイン")
+                .font(.title3)
+                .fontWeight(.medium)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(Color.green)
+                .cornerRadius(12)
+            }
           }
           .padding(.horizontal, 40)
 
@@ -87,11 +99,14 @@ struct HomeView: View {
       }
       .navigationTitle("")
       .navigationBarHidden(true)
-      .sheet(isPresented: $viewModel.showingDifficultySelection) {
-        DifficultySelectionView(viewModel: viewModel)
+      .sheet(isPresented: $viewModel.showingPuzzleList) {
+        PuzzleListView(viewModel: viewModel)
+      }
+      .sheet(isPresented: $viewModel.showingLogin) {
+        LoginView()
       }
       .fullScreenCover(isPresented: $viewModel.isGameStarted) {
-        GameBoardView()
+        GameBoardView(selectedPuzzle: viewModel.selectedPuzzle)
           .navigationBarBackButtonHidden()
           .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
@@ -100,60 +115,6 @@ struct HomeView: View {
               }
             }
           }
-      }
-    }
-  }
-}
-
-struct DifficultySelectionView: View {
-  @ObservedObject var viewModel: HomeViewModel
-
-  var body: some View {
-    NavigationView {
-      VStack(spacing: 30) {
-        Text("難易度を選択")
-          .font(.title2)
-          .fontWeight(.bold)
-          .padding(.top, 20)
-
-        VStack(spacing: 15) {
-          ForEach(HomeViewModel.Difficulty.allCases, id: \.self) { difficulty in
-            Button(action: {
-              viewModel.startGameWithDifficulty(difficulty)
-            }) {
-              HStack {
-                Text(difficulty.rawValue)
-                  .font(.title3)
-                  .fontWeight(.medium)
-                Spacer()
-                if viewModel.selectedDifficulty == difficulty {
-                  Image(systemName: "checkmark")
-                    .foregroundColor(.blue)
-                }
-              }
-              .padding()
-              .background(
-                RoundedRectangle(cornerRadius: 12)
-                  .fill(
-                    viewModel.selectedDifficulty == difficulty
-                      ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
-              )
-            }
-            .foregroundColor(.primary)
-          }
-        }
-        .padding(.horizontal, 20)
-
-        Spacer()
-      }
-      .navigationTitle("難易度選択")
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .navigationBarTrailing) {
-          Button("キャンセル") {
-            viewModel.showingDifficultySelection = false
-          }
-        }
       }
     }
   }

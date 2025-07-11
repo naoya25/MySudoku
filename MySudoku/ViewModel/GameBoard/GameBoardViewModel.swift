@@ -21,6 +21,13 @@ class GameBoardViewModel: ObservableObject {
     }
   }
 
+  func startGameWithPuzzle(_ puzzle: SupabaseResponse) {
+    board = Board(givenData: puzzle.givenData, solutionData: puzzle.solutionData)
+    selectedPosition = nil
+    isNoteMode = false
+    gameState = .playing
+  }
+
   private func loadNewPuzzle() async {
     do {
       board = try await SupabaseService.shared.fetchRandomPuzzle()
