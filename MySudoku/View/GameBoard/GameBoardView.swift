@@ -8,6 +8,8 @@ struct GameBoardView: View {
       switch viewModel.gameState {
       case .playing:
         gameView
+      case .paused:
+        pausedView
       case .completed:
         completedView
       }
@@ -66,6 +68,10 @@ struct GameBoardView: View {
       .padding(.bottom, 20)
     }
     .background(Color(.systemBackground))
+  }
+
+  private var pausedView: some View {
+    Text("パズルを一時停止しました")
   }
 
   private var completedView: some View {

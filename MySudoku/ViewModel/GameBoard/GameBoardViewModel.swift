@@ -10,6 +10,7 @@ class GameBoardViewModel: ObservableObject {
 
   enum GameState {
     case playing
+    case paused
     case completed
   }
 
