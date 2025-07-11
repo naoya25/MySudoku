@@ -70,7 +70,7 @@ struct HomeView: View {
             }.disabled(true)
 
             if viewModel.isAdmin {
-              NavigationLink(destination: Text("設定画面")) {
+              NavigationLink(destination: SettingsView()) {
                 Text("設定")
                   .font(.title3)
                   .fontWeight(.medium)
