@@ -176,7 +176,14 @@ class SupabaseService {
     }
 
     var request = URLRequest(url: url)
-    request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+
+    // JWT認証を使用
+    if let jwtToken = getJWTToken() {
+      request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
+    } else {
+      request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+    }
+
     request.setValue(apiKey, forHTTPHeaderField: "apikey")
     request.setValue("application/json", forHTTPHeaderField: "Accept")
 
@@ -220,7 +227,14 @@ class SupabaseService {
 
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
-    request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+
+    // JWT認証を使用
+    if let jwtToken = getJWTToken() {
+      request.setValue("Bearer \(jwtToken)", forHTTPHeaderField: "Authorization")
+    } else {
+      request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+    }
+
     request.setValue(apiKey, forHTTPHeaderField: "apikey")
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -272,6 +286,11 @@ class SupabaseService {
     }
 
     print("保存完了: \(savedCount)問保存, \(skippedCount)問スキップ")
+  }
+
+  // MARK: - JWT認証関連
+  private func getJWTToken() -> String? {
+    return UserDefaults.standard.string(forKey: "access_token")
   }
 }
 
