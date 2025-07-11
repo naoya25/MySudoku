@@ -41,10 +41,24 @@ class LoginViewModel: ObservableObject {
 
     do {
       try await AuthService.shared.signUp(email: email, password: password)
-      successMessage = "アカウントが作成されました。確認メールをご確認ください。"
+      successMessage = "アカウントが作成されました。"
       showingSuccess = true
+      // 成功後は入力フィールドをクリア
+      email = ""
+      password = ""
     } catch {
-      errorMessage = error.localizedDescription
+      if let authError = error as? AuthError,
+        case .authenticationFailed(let message) = authError,
+        message.contains("アカウントが作成されました")
+      {
+        // サインアップ成功メッセージの場合は成功として扱う
+        successMessage = message
+        showingSuccess = true
+        email = ""
+        password = ""
+      } else {
+        errorMessage = error.localizedDescription
+      }
     }
 
     isSigningUp = false

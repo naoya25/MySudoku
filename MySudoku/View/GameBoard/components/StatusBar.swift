@@ -43,6 +43,5 @@ struct StatusBar: View {
     }
     .padding(.horizontal, 20)
     .padding(.vertical, 15)
-    .background(Color.gray.opacity(0.1))
   }
 }
