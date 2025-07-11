@@ -3,7 +3,7 @@ import Foundation
 struct AuthResponse: Codable {
   let accessToken: String?
   let refreshToken: String?
-  let user: User
+  let user: AppUser
 
   enum CodingKeys: String, CodingKey {
     case accessToken = "access_token"
@@ -13,7 +13,7 @@ struct AuthResponse: Codable {
 }
 
 struct SignUpResponse: Codable {
-  let user: User
+  let user: AppUser
   let session: Session?
 
   struct Session: Codable {
@@ -27,10 +27,11 @@ struct SignUpResponse: Codable {
   }
 }
 
-struct User: Codable {
+struct AppUser: Codable {
   let id: String
   let email: String
   let emailConfirmed: Bool
+  var isAdmin: Bool = false
 
   enum CodingKeys: String, CodingKey {
     case id
@@ -54,7 +55,7 @@ class AuthService {
   private let apiKey: String
   private let session: URLSession
 
-  @Published var currentUser: User?
+  @Published var currentUser: AppUser?
   @Published var isAuthenticated = false
 
   private init() {
@@ -177,13 +178,19 @@ class AuthService {
         throw AuthError.authenticationFailed("認証トークンが取得できませんでした")
       }
 
-      await MainActor.run {
-        self.currentUser = authResponse.user
-        self.isAuthenticated = true
-      }
-
       UserDefaults.standard.set(accessToken, forKey: "access_token")
       UserDefaults.standard.set(refreshToken, forKey: "refresh_token")
+
+      // Check if user is admin
+      let user = authResponse.user
+      let isAdmin = await checkIsAdmin(userId: user.id)
+
+      await MainActor.run {
+        var updatedUser = user
+        updatedUser.isAdmin = isAdmin
+        self.currentUser = updatedUser
+        self.isAuthenticated = true
+      }
     } else {
       let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
       let errorMessage =
@@ -225,16 +232,54 @@ class AuthService {
 
       if httpResponse.statusCode == 200 {
         let decoder = JSONDecoder()
-        let user = try decoder.decode(User.self, from: data)
+        var user = try decoder.decode(AppUser.self, from: data)
+
+        // Check if user is admin
+        let isAdmin = await checkIsAdmin(userId: user.id)
+        user.isAdmin = isAdmin
+
+        let updatedUser = user
 
         await MainActor.run {
-          self.currentUser = user
+          self.currentUser = updatedUser
           self.isAuthenticated = true
         }
       }
     } catch {
       await signOut()
     }
+  }
+
+  func checkIsAdmin(userId: String) async -> Bool {
+    guard let url = URL(string: "\(baseURL)/rest/v1/admin_users?user_id=eq.\(userId)") else {
+      return false
+    }
+
+    var request = URLRequest(url: url)
+    request.setValue(
+      "Bearer \(UserDefaults.standard.string(forKey: "access_token") ?? "")",
+      forHTTPHeaderField: "Authorization")
+    request.setValue(apiKey, forHTTPHeaderField: "apikey")
+    request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+    do {
+      let (data, response) = try await session.data(for: request)
+
+      guard let httpResponse = response as? HTTPURLResponse else {
+        return false
+      }
+
+      if httpResponse.statusCode == 200 {
+        // If we get any records back, the user is an admin
+        if let jsonArray = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+          return !jsonArray.isEmpty
+        }
+      }
+    } catch {
+      print("Error checking admin status: \(error)")
+    }
+
+    return false
   }
 }
 

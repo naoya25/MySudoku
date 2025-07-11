@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 @MainActor
 class HomeViewModel: ObservableObject {
@@ -9,6 +10,16 @@ class HomeViewModel: ObservableObject {
   @Published var errorMessage: String?
   @Published var selectedPuzzle: SupabaseResponse?
   @Published var showingLogin = false
+  @Published var isAuthenticated = false
+  @Published var currentUser: AppUser?
+  @Published var isAdmin = false
+
+  private var cancellables = Set<AnyCancellable>()
+
+  init() {
+    setupAuthObservation()
+    checkAuthStatus()
+  }
 
   enum Difficulty: String, CaseIterable {
     case easy = "簡単"
@@ -38,9 +49,36 @@ class HomeViewModel: ObservableObject {
   func resumeGame() {
     isGameStarted = true
   }
-  
+
   func showLogin() {
     showingLogin = true
+  }
+
+  func logout() {
+    Task {
+      await AuthService.shared.signOut()
+    }
+  }
+
+  private func setupAuthObservation() {
+    AuthService.shared.$isAuthenticated
+      .receive(on: DispatchQueue.main)
+      .assign(to: \.isAuthenticated, on: self)
+      .store(in: &cancellables)
+
+    AuthService.shared.$currentUser
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] user in
+        self?.currentUser = user
+        self?.isAdmin = user?.isAdmin ?? false
+      }
+      .store(in: &cancellables)
+  }
+
+  private func checkAuthStatus() {
+    Task {
+      await AuthService.shared.checkAuthStatus()
+    }
   }
 
   func loadPuzzles() {

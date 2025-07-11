@@ -98,25 +98,6 @@ struct GameBoardView: View {
 
   private var pausedView: some View {
     VStack(spacing: 0) {
-      // 戻るボタン
-      HStack {
-        Button(action: {
-          dismiss()
-        }) {
-          HStack(spacing: 4) {
-            Image(systemName: "chevron.left")
-              .font(.title2)
-            Text("戻る")
-              .font(.title3)
-          }
-          .foregroundColor(.blue)
-        }
-        .padding(.leading, 20)
-
-        Spacer()
-      }
-      .padding(.top, 10)
-
       Spacer()
 
       VStack(spacing: 30) {

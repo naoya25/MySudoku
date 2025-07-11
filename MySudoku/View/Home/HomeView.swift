@@ -69,27 +69,52 @@ struct HomeView: View {
                 .cornerRadius(12)
             }.disabled(true)
 
-            NavigationLink(destination: Text("設定画面")) {
-              Text("設定")
-                .font(.title3)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
-            }.disabled(true)
-            Button(action: {
-              viewModel.showLogin()
-            }) {
-              Text("ログイン")
-                .font(.title3)
-                .fontWeight(.medium)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(Color.green)
-                .cornerRadius(12)
+            if viewModel.isAdmin {
+              NavigationLink(destination: Text("設定画面")) {
+                Text("設定")
+                  .font(.title3)
+                  .fontWeight(.medium)
+                  .foregroundColor(.primary)
+                  .frame(maxWidth: .infinity)
+                  .frame(height: 50)
+                  .background(Color.orange.opacity(0.2))
+                  .cornerRadius(12)
+              }
+            }
+            if viewModel.isAuthenticated {
+              VStack(spacing: 12) {
+                if let user = viewModel.currentUser {
+                  Text("ログイン中: \(user.email)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                }
+
+                Button(action: {
+                  viewModel.logout()
+                }) {
+                  Text("ログアウト")
+                    .font(.title3)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(Color.red)
+                    .cornerRadius(12)
+                }
+              }
+            } else {
+              Button(action: {
+                viewModel.showLogin()
+              }) {
+                Text("ログイン")
+                  .font(.title3)
+                  .fontWeight(.medium)
+                  .foregroundColor(.white)
+                  .frame(maxWidth: .infinity)
+                  .frame(height: 50)
+                  .background(Color.green)
+                  .cornerRadius(12)
+              }
             }
           }
           .padding(.horizontal, 40)
