@@ -4,9 +4,11 @@
     "fileprivate",
     "fxxtgvxvbdhcqsganbwyxbslfdbt",
     "MVVM",
+    "Supabase",
     "xcassets",
     "xcodeproj",
-    "xcworkspace"
+    "xcworkspace",
+    "xmark"
   ],
   "editor.tabSize": 2,
   "editor.insertSpaces": true

@@ -6,6 +6,8 @@ struct GameBoardView: View {
   var body: some View {
     VStack {
       switch viewModel.gameState {
+      case .error:
+        errorView
       case .playing:
         gameView
       case .paused:
@@ -26,7 +28,11 @@ struct GameBoardView: View {
       StatusBar(
         elapsedTime: "00:00",
         errorCount: 0,
-        maxErrors: 3
+        maxErrors: 3,
+        isPaused: viewModel.gameState == .paused,
+        onPauseToggle: {
+          viewModel.togglePause()
+        }
       )
 
       Spacer()
@@ -71,7 +77,30 @@ struct GameBoardView: View {
   }
 
   private var pausedView: some View {
-    Text("パズルを一時停止しました")
+    VStack(spacing: 30) {
+      Image(systemName: "pause.circle.fill")
+        .font(.system(size: 80))
+        .foregroundColor(.blue)
+
+      Text("一時停止中")
+        .font(.largeTitle)
+        .fontWeight(.bold)
+
+      Text("ゲームを続けるには再生ボタンをタップしてください")
+        .font(.body)
+        .foregroundColor(.secondary)
+        .multilineTextAlignment(.center)
+
+      Button("再開") {
+        viewModel.togglePause()
+      }
+      .font(.title2)
+      .foregroundColor(.white)
+      .frame(width: 150, height: 50)
+      .background(Color.blue)
+      .cornerRadius(10)
+    }
+    .padding()
   }
 
   private var completedView: some View {
@@ -90,6 +119,23 @@ struct GameBoardView: View {
       .foregroundColor(.white)
       .frame(width: 200, height: 50)
       .background(Color.green)
+      .cornerRadius(10)
+    }
+  }
+
+  private var errorView: some View {
+    VStack(spacing: 20) {
+      Text("エラーが発生しました")
+        .font(.largeTitle)
+        .fontWeight(.bold)
+
+      Button("リトライ") {
+        viewModel.startNewGame()
+      }
+      .font(.title2)
+      .foregroundColor(.white)
+      .frame(width: 150, height: 50)
+      .background(Color.red)
       .cornerRadius(10)
     }
   }

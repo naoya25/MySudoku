@@ -9,57 +9,59 @@ class GameBoardViewModel: ObservableObject {
   @Published var gameState: GameState = .playing
 
   enum GameState {
+    case error
     case playing
     case paused
     case completed
   }
 
   func startNewGame() {
-    board = createMockBoard()
-    selectedPosition = nil
-    isNoteMode = false
-    gameState = .playing
-  }
-
-  private func createMockBoard() -> Board {
-    // 実際のナンプレパズルの例
-    let givenValues: [(row: Int, column: Int, value: Int)] = [
-      // 1行目
-      (0, 0, 5), (0, 1, 3), (0, 4, 7),
-      // 2行目
-      (1, 0, 6), (1, 3, 1), (1, 4, 9), (1, 5, 5),
-      // 3行目
-      (2, 1, 9), (2, 2, 8), (2, 7, 6),
-      // 4行目
-      (3, 0, 8), (3, 4, 6), (3, 8, 3),
-      // 5行目
-      (4, 0, 4), (4, 3, 8), (4, 5, 3), (4, 8, 1),
-      // 6行目
-      (5, 0, 7), (5, 4, 2), (5, 8, 6),
-      // 7行目
-      (6, 1, 6), (6, 6, 2), (6, 7, 8),
-      // 8行目
-      (7, 3, 4), (7, 4, 1), (7, 5, 9), (7, 8, 5),
-      // 9行目
-      (8, 4, 8), (8, 7, 7), (8, 8, 9),
-    ]
-
-    var cells: [Cell] = []
-    for row in 0..<9 {
-      for column in 0..<9 {
-        var cell = Cell()
-
-        // 与えられた数字をチェック
-        if let given = givenValues.first(where: { $0.row == row && $0.column == column }) {
-          cell.given = given.value
-        }
-
-        cells.append(cell)
-      }
+    Task {
+      await loadNewPuzzle()
     }
-
-    return Board(cells: cells)
   }
+
+  private func loadNewPuzzle() async {
+    do {
+      board = try await SupabaseService.shared.fetchRandomPuzzle()
+      selectedPosition = nil
+      isNoteMode = false
+      gameState = .playing
+    } catch {
+      print(
+        "Failed to load puzzle from Supabase: \(error.localizedDescription)"
+      )
+
+      selectedPosition = nil
+      isNoteMode = false
+      gameState = .error
+    }
+  }
+
+  func togglePause() {
+    switch gameState {
+    case .error:
+      break
+    case .playing:
+      gameState = .paused
+    case .paused:
+      gameState = .playing
+    case .completed:
+      break
+    }
+  }
+
+  // private func createMockBoard() -> Board {
+  //   // 問題盤面：0は空欄、1-9は与えられた数字（81文字）
+  //   let givenData =
+  //     "530007000600195000098000060800060003400803001700020006060000280000419005000080079"
+
+  //   // 完全な解答（81文字）
+  //   let solutionData =
+  //     "534678912672195348198342567859761423426853791713924856961537284287419635345286179"
+
+  //   return Board(givenData: givenData, solutionData: solutionData)
+  // }
 
   func selectCell(at position: Position) {
     selectedPosition = position

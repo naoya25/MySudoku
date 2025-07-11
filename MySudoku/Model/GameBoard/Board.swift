@@ -4,6 +4,7 @@ struct Board: Codable {
   var cells: [Cell]
   var startDate: Date
   var moves: [Move] = []
+  var solutionCells: [Cell] = []
 
   init() {
     self.cells = Array(repeating: Cell(), count: 81)
@@ -16,9 +17,23 @@ struct Board: Codable {
     self.startDate = Date()
   }
 
+  init(cells: [Cell], solutionCells: [Cell]) {
+    precondition(cells.count == 81, "Board must have exactly 81 cells")
+    precondition(solutionCells.count == 81, "Solution must have exactly 81 cells")
+    self.cells = cells
+    self.solutionCells = solutionCells
+    self.startDate = Date()
+  }
+
   func cellAt(row: Int, column: Int) -> Cell? {
     guard row >= 0 && row < 9 && column >= 0 && column < 9 else { return nil }
     return cells[row * 9 + column]
+  }
+
+  func solutionCellAt(row: Int, column: Int) -> Cell? {
+    guard row >= 0 && row < 9 && column >= 0 && column < 9 else { return nil }
+    guard !solutionCells.isEmpty else { return nil }
+    return solutionCells[row * 9 + column]
   }
 
   mutating func setCellAt(row: Int, column: Int, cell: Cell) {
@@ -86,5 +101,39 @@ struct Board: Codable {
 
   var elapsedTime: TimeInterval {
     return Date().timeIntervalSince(startDate)
+  }
+}
+
+extension Board {
+  init(givenData: String, solutionData: String) {
+    precondition(givenData.count == 81, "Given data must have exactly 81 characters")
+    precondition(solutionData.count == 81, "Solution data must have exactly 81 characters")
+
+    var cells: [Cell] = []
+    var solutionCells: [Cell] = []
+
+    for i in 0..<81 {
+      var cell = Cell()
+      var solutionCell = Cell()
+
+      let givenChar = String(givenData[givenData.index(givenData.startIndex, offsetBy: i)])
+      if givenChar != "0", let givenValue = Int(givenChar) {
+        cell.given = givenValue
+      }
+
+      let solutionChar = String(
+        solutionData[solutionData.index(solutionData.startIndex, offsetBy: i)])
+      if let solutionValue = Int(solutionChar) {
+        solutionCell.given = solutionValue
+      }
+
+      cells.append(cell)
+      solutionCells.append(solutionCell)
+    }
+
+    self.cells = cells
+    self.solutionCells = solutionCells
+    self.startDate = Date()
+    self.moves = []
   }
 }
