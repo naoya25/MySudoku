@@ -125,7 +125,7 @@ class GameBoardViewModel: ObservableObject {
 
       board.cells[cellIndex] = newCell
       board.addMove(move)
-      
+
       checkCellCorrectness(at: position)
     }
 
@@ -183,31 +183,61 @@ class GameBoardViewModel: ObservableObject {
       .map { self.timerService.formatTime($0) }
       .assign(to: &$formattedElapsedTime)
   }
-  
+
   private func checkCellCorrectness(at position: Position) {
     if board.isCorrectValueAt(row: position.row, column: position.column) {
       incorrectPositions.remove(position)
     } else {
       if let cell = board.cellAt(row: position.row, column: position.column),
-         cell.displayValue != nil {
+        cell.displayValue != nil
+      {
         incorrectPositions.insert(position)
       } else {
         incorrectPositions.remove(position)
       }
     }
   }
-  
+
   func refreshAllCellCorrectness() {
     incorrectPositions.removeAll()
     for row in 0..<9 {
       for column in 0..<9 {
         let position = Position(row: row, column: column)
         if let cell = board.cellAt(row: row, column: column),
-           cell.displayValue != nil,
-           !board.isCorrectValueAt(row: row, column: column) {
+          cell.displayValue != nil,
+          !board.isCorrectValueAt(row: row, column: column)
+        {
           incorrectPositions.insert(position)
         }
       }
+    }
+  }
+
+  func fillObviousCells() {
+    let filledCells = SolutionService.fillObviousCells(board: &board)
+
+    for (position, _) in filledCells {
+      checkCellCorrectness(at: position)
+    }
+
+    if !filledCells.isEmpty {
+      checkGameCompletion()
+    }
+  }
+
+  func fillAllNotes() {
+    let _ = SolutionService.fillAllNotes(board: &board)
+  }
+
+  func applyHiddenSingles() {
+    let foundSingles = SolutionService.findHiddenSingles(board: &board)
+
+    for (position, _) in foundSingles {
+      checkCellCorrectness(at: position)
+    }
+
+    if !foundSingles.isEmpty {
+      checkGameCompletion()
     }
   }
 }

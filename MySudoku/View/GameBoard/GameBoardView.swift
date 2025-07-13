@@ -262,10 +262,22 @@ struct GameBoardView: View {
     }
     .padding()
   }
-  
+
   private func handleSolutionStep(_ step: SolutionShortcutSheet.SolutionStep) {
-    // TODO: 実装予定
-    print("Selected step: \(step.title)")
+    switch step {
+    case .fillObviousCells:
+      viewModel.fillObviousCells()
+    case .fillAllNotes:
+      viewModel.fillAllNotes()
+    case .nakedSingle:
+      // TODO: 単一候補法の実装
+      print("単一候補法は実装予定")
+    case .hiddenSingle:
+      viewModel.applyHiddenSingles()
+    case .pointingPair:
+      // TODO: ポイントペア法の実装
+      print("ポイントペア法は実装予定")
+    }
   }
 }
 
