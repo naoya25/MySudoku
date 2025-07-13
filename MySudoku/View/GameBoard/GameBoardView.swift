@@ -44,7 +44,7 @@ struct GameBoardView: View {
 
         // 上部: タイマーと間違い数カウント
         StatusBar(
-          elapsedTime: "00:00",
+          elapsedTime: viewModel.formattedElapsedTime,
           errorCount: 0,
           maxErrors: 3,
           isPaused: viewModel.gameState == .paused,
