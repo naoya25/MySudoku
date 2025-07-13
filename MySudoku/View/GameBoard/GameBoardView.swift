@@ -4,6 +4,7 @@ struct GameBoardView: View {
   @StateObject private var viewModel = GameBoardViewModel()
   let selectedPuzzle: SupabaseResponse?
   @Environment(\.dismiss) private var dismiss
+  @State private var showSolutionSheet = false
 
   var body: some View {
     VStack {
@@ -25,6 +26,16 @@ struct GameBoardView: View {
       } else {
         viewModel.startNewGame()
       }
+    }
+    .sheet(isPresented: $showSolutionSheet) {
+      SolutionShortcutSheet(
+        isPresented: $showSolutionSheet,
+        onSelectStep: { step in
+          handleSolutionStep(step)
+        }
+      )
+      .presentationDetents([.medium, .large])
+      .presentationDragIndicator(.visible)
     }
   }
 
@@ -62,6 +73,7 @@ struct GameBoardView: View {
         board: viewModel.board,
         selectedPosition: viewModel.selectedPosition,
         validationResult: viewModel.getValidationResult(),
+        incorrectPositions: viewModel.incorrectPositions,
         onCellTap: { position in
           viewModel.selectCell(at: position)
         }
@@ -81,6 +93,9 @@ struct GameBoardView: View {
         },
         onClear: {
           viewModel.clearCell()
+        },
+        onShortcut: {
+          showSolutionSheet = true
         }
       )
       .padding(.horizontal, 20)
@@ -246,6 +261,11 @@ struct GameBoardView: View {
       Spacer()
     }
     .padding()
+  }
+  
+  private func handleSolutionStep(_ step: SolutionShortcutSheet.SolutionStep) {
+    // TODO: 実装予定
+    print("Selected step: \(step.title)")
   }
 }
 

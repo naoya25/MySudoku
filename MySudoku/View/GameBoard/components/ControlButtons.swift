@@ -5,23 +5,24 @@ struct ControlButtons: View {
   let onUndo: () -> Void
   let onToggleNoteMode: () -> Void
   let onClear: () -> Void
+  let onShortcut: () -> Void
 
   var body: some View {
-    HStack(spacing: 15) {
+    HStack(spacing: 10) {
       Button("戻す") {
         onUndo()
       }
-      .font(.title3)
+      .font(.callout)
       .foregroundColor(.blue)
       .frame(maxWidth: .infinity)
       .frame(height: 44)
       .background(Color.blue.opacity(0.1))
       .cornerRadius(8)
 
-      Button("ノートモード") {
+      Button("ノート") {
         onToggleNoteMode()
       }
-      .font(.title3)
+      .font(.callout)
       .foregroundColor(isNoteMode ? .white : .blue)
       .frame(maxWidth: .infinity)
       .frame(height: 44)
@@ -31,11 +32,22 @@ struct ControlButtons: View {
       Button("クリア") {
         onClear()
       }
-      .font(.title3)
+      .font(.callout)
       .foregroundColor(.red)
       .frame(maxWidth: .infinity)
       .frame(height: 44)
       .background(Color.red.opacity(0.1))
+      .cornerRadius(8)
+      
+      Button(action: {
+        onShortcut()
+      }) {
+        Image(systemName: "wand.and.stars")
+          .font(.title3)
+          .foregroundColor(.purple)
+      }
+      .frame(width: 44, height: 44)
+      .background(Color.purple.opacity(0.1))
       .cornerRadius(8)
     }
   }

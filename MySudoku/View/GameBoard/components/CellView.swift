@@ -4,6 +4,7 @@ struct CellView: View {
   let cell: Cell
   let isSelected: Bool
   let hasError: Bool
+  let isIncorrect: Bool
   let isHighlighted: Bool
   let hasSameNumber: Bool
   let onTap: () -> Void
@@ -38,6 +39,8 @@ struct CellView: View {
   private var backgroundColor: Color {
     if hasError {
       return Color.red.opacity(0.3)
+    } else if isIncorrect {
+      return Color.orange.opacity(0.2)
     } else if isSelected || hasSameNumber {
       return Color.blue.opacity(0.1)
     } else if isHighlighted {
@@ -50,6 +53,8 @@ struct CellView: View {
   private var textColor: Color {
     if hasError {
       return .red
+    } else if isIncorrect {
+      return .orange
     } else if cell.isGiven {
       return .black
     } else {

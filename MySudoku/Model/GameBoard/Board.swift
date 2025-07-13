@@ -99,6 +99,17 @@ struct Board: Codable {
     return cells.allSatisfy { $0.displayValue != nil }
   }
 
+  func isCorrectValueAt(row: Int, column: Int) -> Bool {
+    guard let cell = cellAt(row: row, column: column),
+      let cellValue = cell.displayValue,
+      let solutionCell = solutionCellAt(row: row, column: column),
+      let solutionValue = solutionCell.displayValue
+    else {
+      return false
+    }
+    return cellValue == solutionValue
+  }
+
   var elapsedTime: TimeInterval {
     return Date().timeIntervalSince(startDate)
   }

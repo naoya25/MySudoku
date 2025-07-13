@@ -4,6 +4,7 @@ struct SudokuGrid: View {
   let board: Board
   let selectedPosition: Position?
   let validationResult: ValidationResult
+  let incorrectPositions: Set<Position>
   let onCellTap: (Position) -> Void
 
   var body: some View {
@@ -15,6 +16,7 @@ struct SudokuGrid: View {
             let position = Position(row: row, column: column)
             let isSelected = selectedPosition == position
             let hasError = validationResult.errorPositions.contains(position)
+            let isIncorrect = incorrectPositions.contains(position)
             let isHighlighted = isPositionHighlighted(position)
             let hasSameNumber = hasSameNumberAsSelected(cell: cell)
 
@@ -22,6 +24,7 @@ struct SudokuGrid: View {
               cell: cell,
               isSelected: isSelected,
               hasError: hasError,
+              isIncorrect: isIncorrect,
               isHighlighted: isHighlighted,
               hasSameNumber: hasSameNumber,
               onTap: {

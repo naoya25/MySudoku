@@ -1,6 +1,6 @@
+import Combine
 import Foundation
 import SwiftUI
-import Combine
 
 @MainActor
 class GameBoardViewModel: ObservableObject {
@@ -9,7 +9,8 @@ class GameBoardViewModel: ObservableObject {
   @Published var isNoteMode = false
   @Published var gameState: GameState = .playing
   @Published var formattedElapsedTime: String = "00:00"
-  
+  @Published var incorrectPositions: Set<Position> = []
+
   private let timerService = TimerService()
   private var cancellables = Set<AnyCancellable>()
 
@@ -25,7 +26,7 @@ class GameBoardViewModel: ObservableObject {
       await loadNewPuzzle()
     }
   }
-  
+
   init() {
     setupTimerBinding()
   }
@@ -35,6 +36,7 @@ class GameBoardViewModel: ObservableObject {
     selectedPosition = nil
     isNoteMode = false
     gameState = .playing
+    incorrectPositions.removeAll()
     timerService.reset()
     timerService.start()
   }
@@ -45,6 +47,7 @@ class GameBoardViewModel: ObservableObject {
       selectedPosition = nil
       isNoteMode = false
       gameState = .playing
+      incorrectPositions.removeAll()
       timerService.reset()
       timerService.start()
     } catch {
@@ -72,18 +75,6 @@ class GameBoardViewModel: ObservableObject {
       break
     }
   }
-
-  // private func createMockBoard() -> Board {
-  //   // 問題盤面：0は空欄、1-9は与えられた数字（81文字）
-  //   let givenData =
-  //     "530007000600195000098000060800060003400803001700020006060000280000419005000080079"
-
-  //   // 完全な解答（81文字）
-  //   let solutionData =
-  //     "534678912672195348198342567859761423426853791713924856961537284287419635345286179"
-
-  //   return Board(givenData: givenData, solutionData: solutionData)
-  // }
 
   func selectCell(at position: Position) {
     selectedPosition = position
@@ -134,6 +125,8 @@ class GameBoardViewModel: ObservableObject {
 
       board.cells[cellIndex] = newCell
       board.addMove(move)
+      
+      checkCellCorrectness(at: position)
     }
 
     checkGameCompletion()
@@ -184,10 +177,37 @@ class GameBoardViewModel: ObservableObject {
   func getValidationResult() -> ValidationResult {
     return ValidationService.validateBoard(board)
   }
-  
+
   private func setupTimerBinding() {
     timerService.$elapsedTime
       .map { self.timerService.formatTime($0) }
       .assign(to: &$formattedElapsedTime)
+  }
+  
+  private func checkCellCorrectness(at position: Position) {
+    if board.isCorrectValueAt(row: position.row, column: position.column) {
+      incorrectPositions.remove(position)
+    } else {
+      if let cell = board.cellAt(row: position.row, column: position.column),
+         cell.displayValue != nil {
+        incorrectPositions.insert(position)
+      } else {
+        incorrectPositions.remove(position)
+      }
+    }
+  }
+  
+  func refreshAllCellCorrectness() {
+    incorrectPositions.removeAll()
+    for row in 0..<9 {
+      for column in 0..<9 {
+        let position = Position(row: row, column: column)
+        if let cell = board.cellAt(row: row, column: column),
+           cell.displayValue != nil,
+           !board.isCorrectValueAt(row: row, column: column) {
+          incorrectPositions.insert(position)
+        }
+      }
+    }
   }
 }
